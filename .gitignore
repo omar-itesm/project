@@ -1,0 +1,43 @@
+# Ignore all subdirectories
+/**/
+data/events_France.json
+data/events_Germany.json
+data/events_Italy.json
+data/events_Spain.json
+data/events_England.json
+data/events_European_Championship.json
+data/events_World_Cup.json
+data/matches_England.json
+data/matches_European_Championship.json
+data/matches_France.json
+data/matches_Germany.json
+data/matches_Italy.json
+data/matches_Spain.json
+data/matches_World_Cup.json
+
+# Exclude data folder
+!data/
+!doc/
+!doc/**/
+!experiments/
+!experiments/**/
+!output/
+!play_clustering/
+!play_context/
+!play_format/
+!play_format/**/
+!play_labeling/
+!play_plot/
+!play_preprocessing/
+!play_preprocessing/**/
+!play_separation/
+!Python/
+!SPMF/
+!tactical_analysis/
+!tactical_analysis/**/
+!utils/
+!utils/**/
+
+# Exclude certain file types
+*.asv
+*.csv
