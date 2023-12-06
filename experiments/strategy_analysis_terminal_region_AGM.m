@@ -251,8 +251,7 @@ pattern_info_array = cell(1, numel(contrast_pattern_files)); % Contrast pattern 
 
 %% Parse the strategy analysis results
 
-% parfor
-for i = 1:numel(contrast_pattern_files)
+parfor i = 1:numel(contrast_pattern_files)
     cp_filename      = contrast_pattern_files(i).name;
     cp_filename_full = [contrast_patterns_folder cp_filename];
 
@@ -271,7 +270,6 @@ for i = 1:numel(contrast_pattern_files)
 
     contrast_pattern_collection{i} = cp_info;
      fprintf('Done with %d\r\n', i);
-%    fprintf('Done with %s\r\n', cp_filename);
 end
 
 cp_table_filename = [contrast_patterns_folder 'PBC4cip_filtered_cp_table.csv'];
@@ -290,80 +288,9 @@ save(filename, 'contrast_pattern_collection');
 filename = strcat(contrast_patterns_variables_folder, 'pattern_info_array.mat');
 save(filename, 'pattern_info_array');
 
-%% TODO: Consider adding a contrast pattern analysis for all indirect corner kick plays (not per tactic)
-% % % % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % % % % % Run PBC4cip (for all plays ending in region AGM)
-% % % % % 
-% % % % % % Grab all files in the folder (.arff extension)
-% % % % % strategy_tables       = dir([strategy_tables_complete_folder '*.csv']); % read all .arff files in the strategy tables folder
-% % % % % 
-% % % % % for i = 1:length(strategy_tables)
-% % % % %     current_file = strategy_tables(i).name;
-% % % % %     current_table = readtable([strategy_tables_complete_folder current_file]);
-% % % % % 
-% % % % %     % Count the number of plays that have the tactic
-% % % % %     num_success_plays_with_tactic = sum(strcmp(current_table.class, 'success'));
-% % % % %     num_failed_plays_with_tactic = sum(strcmp(current_table.class, 'fail'));
-% % % % % 
-% % % % %     % Skip only the files where no contrasts can be made
-% % % % %     if num_success_plays_with_tactic == 0 || num_failed_plays_with_tactic == 0
-% % % % %         continue;
-% % % % %     end
-% % % % % 
-% % % % %     % Grab the corresponding .arff file
-% % % % %     input_f  = string([strategy_tables_complete_folder current_file(1:end-4) '.arff']);
-% % % % %     output_f = string([contrast_patterns_complete_folder current_file(1:end-4) '.txt']);
-% % % % % 
-% % % % %     fprintf('Generating contrast pattern file for %s\r\n', current_file);
-% % % % %     max_depth = 4; % Corresponds to three clauses at most
-% % % % %     split_metric = 'Quinlan'; % 'Quinlan', 'Hellinger'
-% % % % %     PBC4cip_wrapper(input_f, output_f, 'filtering', 'true', 'max_depth', max_depth, 'num_trees', 300, 'node_split_measure', split_metric);
-% % % % % 
-% % % % % end
-% % % % % 
-% % % % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % % % % % Parse the contrast patterns (for all plays ending in region AGM)
-% % % % % contrast_pattern_files = dir([contrast_patterns_complete_folder '*.txt']);
-% % % % % 
-% % % % % contrast_pattern_collection = cell(1, length(contrast_pattern_files));
-% % % % % 
-% % % % % pattern_info_array = cell(1, numel(contrast_pattern_files)); % Contrast pattern length at different stages of the filtering process
-% % % % % 
-% % % % % % parfor
-% % % % % parfor i = 1:numel(contrast_pattern_files)
-% % % % %     cp_filename      = contrast_pattern_files(i).name;
-% % % % %     cp_filename_full = [contrast_patterns_complete_folder cp_filename];
-% % % % % 
-% % % % %     strategy_filename_full = [strategy_tables_complete_folder cp_filename(1:end-4) '.csv'];
-% % % % % 
-% % % % %     contrast_patterns = parseContrastPatternsPBC4cip(cp_filename_full);
-% % % % % 
-% % % % %     % Filter contrast patterns
-% % % % %     [contrast_patterns, pattern_info] = filterContrastPatterns(contrast_patterns, complete_csv_filename, strategy_filename_full);
-% % % % % 
-% % % % %     pattern_info_array{i} = pattern_info;
-% % % % % 
-% % % % %     cp_info = struct();
-% % % % %     cp_info.patterns            = contrast_patterns;
-% % % % %     cp_info.filename            = cp_filename;
-% % % % % 
-% % % % %     contrast_pattern_collection{i} = cp_info;
-% % % % %      fprintf('Done with %d\r\n', i);
-% % % % % %    fprintf('Done with %s\r\n', cp_filename);
-% % % % % end
-% % % 
-% % % % % cp_table_filename = [contrast_patterns_complete_folder 'PBC4cip_filtered_cp_table.csv'];
-% % % % % contrastPatternCollection2CSV(contrast_pattern_collection, cp_table_filename)
-% % % % % 
-% % % % % complete_pattern_list = cellfun(@(x) x.patterns, contrast_pattern_collection, 'UniformOutput', false);
-% % % % % complete_pattern_list = horzcat(complete_pattern_list{:});
-
-%% Create summary statistics for indirect corner kicks
-
 %% Tactical analysis of single event plays (direct corner kicks)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %   Standard play info
 standard_plays          = region_plays_1.standard_plays;
 standard_plays_labels   = region_plays_1.corner_labels;
@@ -386,17 +313,6 @@ group_probabilities = createSinglePassStatisticsTable(standard_plays, standard_p
 
 group_metrics_file = [tactic_stats_folder 'Tactic_probabilites.csv'];
 writetable(group_probabilities, group_metrics_file);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Find statistically significant associations between the single pass
-% tactic and the classes
-
-% TODO: At the moment I don't know how to do this because it no longer is a
-% 2 x 2 contingency table and so the chi-squared test cannot be applied. It
-% seems like there is a test of proportions involving the Z-score but I
-% don't know well yet. Furthermore, I don't think that it is necessary to
-% test for statistical significance since the resulting probability seems
-% to be quite clear.
 
 %% Run the strategy analysis for single event plays (direct corner kicks)
 
@@ -433,12 +349,6 @@ play_rule_groups_table = playRuleGroupsToTable(tactic_ids, num2cell(play_tactic_
 
 % Create data for weka
 data  = createDataForWeka(tactic_ids, play_rule_groups_table{:,:}, plays_info, shuffled_labels, 'contrast_type', contrast_type);
-% 
-% unwanted_fields = {'team_names', 'play_rules', 'play_rule_groups', 'play_length', 'use_case_preferred_foot', ...
-%                    'play_ids', 'has_clearance', 'has_interruption', 'has_foul', 'has_shot', 'has_save_attempt',...
-%                    'team_avg_offensive_rating', 'team_avg_defensive_rating', 'play_avg_off_rating',...
-%                    'team_avg_offensive_mv_range', 'team_avg_defensive_mv_range', 'play_avg_off_mv_range',...
-%                    'termination_reason', 'avg_def_play_height'};
                
 unwanted_fields = {'team_names', 'play_rules', 'play_rule_groups', ...
                    'play_ids', 'has_clearance', 'has_interruption', 'has_foul', 'has_shot', 'has_save_attempt',...
@@ -454,27 +364,6 @@ end
 
 
 createStrategyTablesForWeka(data, strategy_tables_folder);
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % Create a file with all of the tactical data
-% % complete_arff_filename = [strategy_tables_complete_folder, 'complete_weka.arff'];
-% % complete_csv_filename  = [strategy_tables_complete_folder, 'complete_weka.csv'];
-% % 
-% % createFileForWeka(data, complete_arff_filename);
-% % T = convertWekaData2Table(data);
-% % writetable(T, complete_csv_filename);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plot plays per tactic
-% % tactic_ids       = 1:num_tactics;
-% % 
-% % pass_regions = cellfun(@(x) getEncodedEventName(x, 'encoding', encoding), standard_plays);
-% % 
-% % play_tactic_id = cellfun(@(x) group_probabilities(strcmp(x,group_probabilities.('Tactic_string')),:).Group,pass_regions);
-% % 
-% % play_rule_groups_table = playRuleGroupsToTable(tactic_ids, num2cell(play_tactic_id));
-% % 
-% % plotPlaysPerTactic(standard_plays, play_rule_groups_table, tactic_plots_folder, 'encoding', encoding);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Run PBC4cip
@@ -514,7 +403,6 @@ contrast_pattern_collection = cell(1, length(contrast_pattern_files));
 
 pattern_info_array = cell(1, numel(contrast_pattern_files)); % Contrast pattern length at different stages of the filtering process
 
-% parfor
 parfor i = 1:numel(contrast_pattern_files)
     cp_filename      = contrast_pattern_files(i).name;
     cp_filename_full = [contrast_patterns_folder cp_filename];
@@ -534,7 +422,6 @@ parfor i = 1:numel(contrast_pattern_files)
 
     contrast_pattern_collection{i} = cp_info;
      fprintf('Done with %d\r\n', i);
-%    fprintf('Done with %s\r\n', cp_filename);
 end
 
 cp_table_filename = [contrast_patterns_folder 'PBC4cip_filtered_cp_table.csv'];
@@ -552,8 +439,6 @@ save(filename, 'contrast_pattern_collection');
 
 filename = strcat(contrast_patterns_variables_folder, 'pattern_info_array.mat');
 save(filename, 'pattern_info_array');
-
-%% Create summary statistics for direct corner kicks
 
 %% Helper functions
 
