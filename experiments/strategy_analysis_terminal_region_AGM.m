@@ -249,7 +249,8 @@ contrast_pattern_collection = cell(1, length(contrast_pattern_files));
 
 pattern_info_array = cell(1, numel(contrast_pattern_files)); % Contrast pattern length at different stages of the filtering process
 
-%%
+%% Parse the strategy analysis results
+
 % parfor
 for i = 1:numel(contrast_pattern_files)
     cp_filename      = contrast_pattern_files(i).name;
